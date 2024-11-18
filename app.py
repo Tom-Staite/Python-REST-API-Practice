@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 
 from resources.item import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
@@ -25,8 +26,9 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UR_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL","sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    
     db.init_app(app)
-
+    migrate = Migrate(app, db)
     api = Api(app)
 
     # Not so secret key (usually stored in Env Variable are not code)
@@ -53,6 +55,16 @@ def create_app(db_url=None):
                      "error": "token_revoked"}),
                     401,
         )
+    
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payloac):
+        return (
+            jsonify(
+                {"description": "The token is not fresh.",
+                 "error": "fresh_token_required",}
+            ),
+            401,
+        )
 
 
     @jwt.invalid_token_loader
@@ -75,8 +87,6 @@ def create_app(db_url=None):
 
 
 
-    with app.app_context():
-        db.create_all()
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
