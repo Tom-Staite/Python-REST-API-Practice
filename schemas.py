@@ -34,6 +34,11 @@ class TagSchema(PlainTagSchema):
 
 
 class TagAndItemSchema(Schema):
-    message = fields.str()
+    message = fields.Str()
     item = fields.Nested(ItemSchema)
     tag = fields.Nested(TagSchema)
+
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    uname = fields.Str(required=True)
+    pwd = fields.Str(required=True, load_only=True)
