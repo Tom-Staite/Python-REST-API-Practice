@@ -41,4 +41,4 @@ class TagAndItemSchema(Schema):
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)
     uname = fields.Str(required=True)
-    pwd = fields.Str(required=True, load_only=True)
+    pwd = fields.Str(required=True)
